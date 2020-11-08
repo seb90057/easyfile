@@ -1,0 +1,135 @@
+import csv
+import pandas as pd
+from easy_file.file.file import File
+from easy_file.utils import timeit, \
+    from_row_to_col
+from easy_file.column.column import Column
+from easy_file.field.field import Field
+import operator
+
+
+class CsvFile(File):
+
+    extension = ['csv']
+
+    @timeit
+    def __init__(self, path):
+        super().__init__(path)
+        self.dialect = None
+        self.delimiter = None
+        self.quotechar = None
+        self.escapechar = None
+        self.has_header = None
+        self.headers = None
+        self.headers_cast = None
+        self.df = None
+
+    @timeit
+    def get_headers(self):
+        if not self.headers:
+            self.set_columns_charac()
+        return self.headers
+
+    @timeit
+    def get_headers_cast(self):
+        if not self.headers_cast:
+            self.set_columns_charac()
+        return self.headers_cast
+
+    @timeit
+    def set_dialect(self):
+        if not self.dialect:
+            sniffer = csv.Sniffer()
+            _, csv_file_sample = self.get_sample(line_number=1000)
+            self.dialect = sniffer.sniff("\n".join(csv_file_sample))
+            self.delimiter = self.dialect.delimiter
+            self.quotechar = self.dialect.quotechar
+            self.escapechar = self.dialect.escapechar
+
+    @timeit
+    def set_columns_charac(self):
+        self.set_dialect()
+        _, csv_file_sample = self.get_sample(line_number=100)
+        lines_sample = list(csv.reader(csv_file_sample, dialect=self.dialect))
+        expected_col_nb = self.get_expected_column_number(lines_sample)
+        first_row = list(csv.reader([self.get_first_line()], dialect=self.dialect))[0]
+        other_rows = [row for row in lines_sample if len(row) == expected_col_nb]
+        other_cols = from_row_to_col(other_rows)
+
+        columns = [Column(oc) for oc in other_cols]
+        headers_cast = [{'type': c.cast} for c in columns]
+
+        if len(first_row) != expected_col_nb:
+            self.headers = ['header_{}'.format(i) for i in range(expected_col_nb)]
+            self.has_header = False
+        else:
+            equal_cast = 0
+            first_row_cast = [Field(h).get_possible_cast() for h in first_row]
+            for i, frc_list in enumerate(first_row_cast):
+                other_rows_cast_type = headers_cast[i]['type']
+                if other_rows_cast_type in [frc.type for frc in frc_list]:
+                    equal_cast += 1
+            if equal_cast == len(first_row):
+                self.headers = ['header_{}'.format(i) for i in
+                                range(expected_col_nb)]
+                self.has_header = False
+            else:
+                self.headers = first_row
+                self.has_header = True
+
+        self.headers_cast = {}
+        for i, h in enumerate(self.headers):
+            self.headers_cast[h] = headers_cast[i]
+
+    @timeit
+    def get_lines(self):
+        self.set_dialect()
+        good_lines = {}
+        bad_lines = {}
+        with open(self.path, 'r', errors="ignore", encoding='utf-8-sig') as f:
+            csv_reader = csv.reader(f, dialect=self.dialect)
+            headers = self.get_headers()
+            for i, row in enumerate(csv_reader):
+                if len(row) == len(headers):
+                    good_lines[i] = row
+                else:
+                    bad_lines[i] = row
+        if self.has_header:
+            del good_lines[0]
+
+        return self.headers, good_lines, bad_lines
+
+    @timeit
+    def get_or_create_df(self):
+        if not self.headers:
+            self.set_columns_charac()
+        if self.df is not None:
+            return self.df
+        else:
+            _, row_dict, _ = self.get_lines()
+            res = pd.DataFrame(row_dict.values(), columns=self.headers)
+            self.df = res
+            return self.df
+
+    @timeit
+    def get_converted_df(self):
+        df = self.get_or_create_df()
+        res = pd.DataFrame()
+        header_dict = self.headers_cast
+
+        for header, header_cast in header_dict.items():
+            res[header] = df[header].apply(lambda row: header_cast['type'].convert_to(row))
+
+        return res
+
+    def get_expected_column_number(self, lines_sample):
+        if self.headers:
+            return len(self.headers)
+        res = {}
+        for line in lines_sample:
+            line_size = len(line)
+            if line_size in res:
+                res[line_size] += 1
+            else:
+                res[line_size] = 1
+        return max(res.items(), key=operator.itemgetter(1))[0]

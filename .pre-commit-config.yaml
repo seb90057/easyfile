@@ -1,0 +1,14 @@
+repos:
+  - repo: https://gitlab.com/pycqa/flake8
+    rev: 3.7.9
+    hooks:
+      - id: flake8
+  - repo: https://gitlab.com/ambv/black
+    rev: stable
+    hooks:
+      - id: black
+  - repo: https://gitlab.com/pre-commit/mirrors-mypy
+    rev: v0.770
+    hooks:
+      - id: mypy
+        args: [--no-warn-no-return, --show-column-numbers, --show-error-codes, --strict-equalty]
