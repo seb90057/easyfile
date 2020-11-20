@@ -1,6 +1,7 @@
 import unittest
 from easy_file.cast.constant.cdate import CDate
 import datetime
+from unittest.mock import MagicMock
 
 
 class CDateTest(unittest.TestCase):
@@ -15,6 +16,13 @@ class CDateTest(unittest.TestCase):
         {'value': None,
          'initial_value': 'toto'}
     ]
+
+    def setUp(self) -> None:
+        patterns = [
+            {'pattern': '^(?P<day>[0-3]{0,1}[0-9]) (?P<month>[0-1]{0,1}[0-9]) (?P<year>[0-9]{2,4})$',
+             'comment': 'DD MM YYYY'}
+        ]
+        CDate.get_or_create_patterns = MagicMock(return_value=patterns)
 
     def test_cast(self):
         for t in CDateTest.data:

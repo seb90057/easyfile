@@ -1,5 +1,6 @@
 import unittest
 from easy_file.cast.constant.cinteger import CInteger
+from unittest.mock import MagicMock
 
 
 class CIntegerTest(unittest.TestCase):
@@ -12,6 +13,13 @@ class CIntegerTest(unittest.TestCase):
         {'value': None,
          'initial_value': 'toto'}
     ]
+
+    def setUp(self) -> None:
+        integer_patterns = [
+            {'pattern': '^(?P<int>[-+]?[0-9]+)(,0*)?$',
+             'comment': 'xxx,0'}
+        ]
+        CInteger.get_or_create_patterns = MagicMock(return_value=integer_patterns)
 
     def test_cast(self):
         for t in CIntegerTest.data:

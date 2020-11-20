@@ -78,14 +78,25 @@ def get_col_size(vd):
     return max(vd.items(), key=operator.itemgetter(1))[0]
 
 
-if __name__ == '__main__':
-    # command = ["shuf",
-    #            "-n",
-    #            "1000",
-    #            r"C:\tmp\data\CORD-19-research-challenge\cord_19_embeddings\cord_19_embeddings_2020-05-19.csv"]
-    # run_bash_cmd(command)
-    p = subprocess.Popen(r'shuf -n 10 C:/tmp/data/CORD-19-research-challenge/cord_19_embeddings/cord_19_embeddings_2020-05-19.csv', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    output, error = p.communicate()
-    print(output)
-    print(error)
+def get_line_discrepancies(df1, df2):
 
+    df1_empty = df1[(df1[df1.columns[0]].isnull()) | (df1[df1.columns[0]] == '')]
+    df2_empty = df2[(df2[df2.columns[0]].isnull()) | (df2[df2.columns[0]] == '')]
+
+    df1_null_index = list(df1_empty.index.values)
+    df2_null_index = list(df2_empty.index.values)
+
+    difference = set(df1_null_index).symmetric_difference(set(df2_null_index))
+    list_difference = list(difference)
+
+    return list_difference
+
+
+if __name__ == '__main__':
+    import pandas as pd
+    df1 = pd.DataFrame([(1, 2), (3, '')], columns=['h1', 'h2'])
+    df2 = pd.DataFrame([(3, None), ('3', None)], columns=['h1', 'h2'])
+
+    ld = get_line_discrepancies(df1[['h2']], df2[['h2']])
+    print(ld)
+    print(df1.iloc[ld])

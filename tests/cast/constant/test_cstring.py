@@ -1,5 +1,6 @@
 import unittest
 from easy_file.cast.constant.cstring import CString
+from unittest.mock import MagicMock
 
 
 class CStringTest(unittest.TestCase):
@@ -10,6 +11,14 @@ class CStringTest(unittest.TestCase):
          'initial_value': '1, 0',
          'pattern': '^.*$'}
     ]
+
+    def setUp(self) -> None:
+        string_patterns = [
+            {'pattern': '^.*$',
+             'comment': 'string'}
+        ]
+        CString.get_or_create_patterns = MagicMock(
+            return_value=string_patterns)
 
     def test_cast(self):
         for t in CStringTest.data:

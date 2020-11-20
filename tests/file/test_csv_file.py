@@ -19,7 +19,17 @@ class CsvFileTest(unittest.TestCase):
         self.file_big = CsvFile(file_path_big)
         self.file_big.set_dialect()
 
-        file_path_light = pkg_resources.resource_filename(__name__,                                                 'data/test_csv_with_header_light.csv')
+        file_path_big_without_header = pkg_resources.resource_filename(__name__,
+                                                        'data/test_csv_without_header.csv')
+        self.file_big_without_header = CsvFile(file_path_big_without_header)
+        self.file_big_without_header.set_dialect()
+
+        file_path_big_with_issue_first_line = pkg_resources.resource_filename(__name__,
+                                                        'data/test_csv_without_header_fake_first_line.csv')
+        self.file_big_with_issue_first_line = CsvFile(file_path_big_with_issue_first_line)
+        self.file_big_with_issue_first_line.set_dialect()
+
+        file_path_light = pkg_resources.resource_filename(__name__, 'data/test_csv_with_header_light.csv')
         self.file_light = CsvFile(file_path_light)
         self.file_light.dialect = self.file_big.dialect
         self.file_light.headers = ['cord_uid', 'date']
@@ -31,6 +41,15 @@ class CsvFileTest(unittest.TestCase):
         result = self.file_big.get_headers()
         expected_result = ['cord_uid', 'sha', 'source_x', 'title', 'doi', 'pmcid', '', 'license', 'abstract', '', 'authors', 'journal', '', 'who_covidence_id', '', 'pdf_json_files', 'pmc_json_files', 'url']
         self.assertListEqual(expected_result, result)
+
+        result = self.file_big_without_header.get_headers()
+        expected_result = ['header_{}'.format(i) for i in range(0, len(self.file_big_without_header.headers))]
+        self.assertListEqual(expected_result, result)
+
+        result = self.file_big_with_issue_first_line.get_headers()
+        expected_result = ['header_{}'.format(i) for i in range(0, len(self.file_big_without_header.headers))]
+        self.assertListEqual(expected_result, result)
+
 
     def test_get_headers_cast(self):
         result = self.file_big.get_headers_cast()
@@ -94,13 +113,14 @@ class CsvFileTest(unittest.TestCase):
         self.assertEqual(18, expected_col_nb)
 
     def test_get_lines(self):
-        _, result_good_lines, result_bad_lines = self.file_big.get_lines()
-        self.assertEqual(97, len(result_good_lines))
-        self.assertEqual(1, len(result_bad_lines))
+        good_lines = self.file_big.get_lines()
+        self.assertEqual(97, len(good_lines))
+        self.assertEqual(1, len(self.file_big.bad_lines))
 
     def test_get_or_create_df(self):
         result = self.file_light.get_or_create_df()
-        expected_result = pd.DataFrame(data = {'cord_uid': ['ug7v899j',
+        expected_result = pd.DataFrame(data = {'line_number': [1, 2],
+                                               'cord_uid': ['ug7v899j',
                                                             '02tnwd4m'],
                                                'date': ['27 01 1983',
                                                         '2010-04-10']})
@@ -108,8 +128,9 @@ class CsvFileTest(unittest.TestCase):
         assert_frame_equal(expected_result, result, check_dtype=False)
 
     def test_get_converted_df(self):
-        result = self.file_light.get_converted_df()
-        expected_result = pd.DataFrame(data = {'cord_uid': ['ug7v899j',
+        g, b = self.file_light.get_converted_df()
+        expected_result = pd.DataFrame(data = {'line_number': [1, 2],
+                                               'cord_uid': ['ug7v899j',
                                                             '02tnwd4m'],
                                                'date': [datetime.date(year=1983,
                                                                       month=1,
@@ -117,4 +138,4 @@ class CsvFileTest(unittest.TestCase):
                                                         datetime.date(year=2010,
                                                                       month=4,
                                                                       day=10)]})
-        assert_frame_equal(expected_result, result)
+        assert_frame_equal(expected_result, g)

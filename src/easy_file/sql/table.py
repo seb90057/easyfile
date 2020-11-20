@@ -1,7 +1,5 @@
 from easy_file.sql.connector import SqlConnector
 from easy_file.sql.column import Column
-import pandas as pd
-import json
 
 
 class Table:
@@ -108,12 +106,14 @@ class Table:
             .format(name=self.name, columns=','.join(columns_list))
 
         header, rows = SqlConnector.execute_request(request)
-        return [v[0] for v in header], rows
+        return header, rows
+
+    def _get_table_info(self):
+        header, rows = SqlConnector.execute_request(self._get_table_info_request())
+        return header, rows
 
     def get_table_info(self):
-        c, rows = SqlConnector.execute_request(self._get_table_info_request())
-        header = [v[0] for v in c]
-
+        header, rows = self._get_table_info()
         result = []
         for r in rows:
             r_dict = {}
@@ -131,3 +131,14 @@ class Table:
             .execute_request(
             self._insert_lines_request(header_list, values_list)
         )
+
+
+if __name__ == '__main__':
+    SqlConnector.get_or_create_connection()
+    table = Table('boolean_patterns')
+    table.set_table()
+
+    header, rows = table.get_lines()
+
+
+    print('ok')

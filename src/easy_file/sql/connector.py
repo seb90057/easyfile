@@ -29,7 +29,7 @@ class SqlConnector:
             c = conn.cursor()
             c.execute(request)
             SqlConnector.commit()
-            return c.description, c.fetchall()
+            return [h[0] for h in c.description], c.fetchall()
         except Error as e:
             print(e)
         return None
@@ -38,6 +38,14 @@ class SqlConnector:
     def commit():
         SqlConnector.conn.commit()
 
+    @staticmethod
+    def get_table_list():
+        request = "SELECT name FROM sqlite_master WHERE type ='table' AND name NOT LIKE 'sqlite_%';"
+        _, tables = SqlConnector.execute_request(request)
+        return [table[0] for table in tables]
+
 
 if __name__ == '__main__':
-    SqlConnector.get_or_create_connection()
+    # SqlConnector.get_or_create_connection()
+    res = SqlConnector.get_table_list()
+    print(res)

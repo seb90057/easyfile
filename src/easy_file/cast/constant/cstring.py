@@ -1,21 +1,21 @@
 import re
-from easy_file.cast.patterns.c_patterns import CPattern
+from easy_file.cast.constant.cglobal import CPattern
 
 
-class CString:
+class CString(CPattern):
     patterns = None
     type = 'STRING'
     patterns_table = 'string_patterns'
 
     @staticmethod
     def _cast(value):
-        CString.patterns = CPattern.get_patterns(CString.patterns_table)
+        CString.patterns = CString.get_or_create_patterns()
         for p in CString.patterns:
-            m = re.match(p.pattern, value)
+            m = re.match(p['pattern'], value)
             if m:
                 return {'initial_value': value,
                         'value': m.group(),
-                        **p.__dict__}
+                        **p}
             else:
                 continue
         return {'initial_value': value,

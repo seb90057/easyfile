@@ -8,10 +8,45 @@ from easy_file.cast.constant.cinteger import CInteger
 from easy_file.cast.constant.cfloat import CFloat
 from easy_file.cast.constant.cstring import CString
 import datetime
+from unittest.mock import MagicMock
 
 
 class ColumnTest(unittest.TestCase):
     def setUp(self) -> None:
+        boolean_patterns = [
+            {'pattern': '^(?P<true>true)|(?P<false>false)$',
+             'comment': 'true/false'}
+        ]
+        CBoolean.get_or_create_patterns = MagicMock(return_value=boolean_patterns)
+
+        date_patterns = [
+            {'pattern': '^(?P<day>[0-3]{0,1}[0-9]) (?P<month>[0-1]{0,1}[0-9]) (?P<year>[0-9]{2,4})$',
+             'comment': 'DD MM YYYY'},
+            {'pattern': '^(?P<day>[0-3]{0,1}[0-9])/(?P<month>[0-1]{0,1}[0-9])/(?P<year>[0-9]{2,4})$',
+             'comment': 'DD/MM/YYYY'},
+            {'pattern': '^(?P<year>[0-9]{2,4})-(?P<month>[0-1]{0,1}[0-9])-(?P<day>[0-3]{0,1}[0-9])$',
+             'comment': 'DD-MM-YYYY'}
+        ]
+        CDate.get_or_create_patterns = MagicMock(return_value=date_patterns)
+
+        float_patterns = [
+            {'pattern': '^(?P<int>[-+]?[0-9]*)(\.(?P<dec>[0-9]*))?$',
+             'comment': 'xxx.xxx'}
+        ]
+        CFloat.get_or_create_patterns = MagicMock(return_value=float_patterns)
+
+        integer_patterns = [
+            {'pattern': '^(?P<int>[-+]?[0-9]+)(\.0*)?$',
+             'comment': 'xxx.0'}
+        ]
+        CInteger.get_or_create_patterns = MagicMock(return_value=integer_patterns)
+
+        string_patterns = [
+            {'pattern': '^.*$',
+             'comment': 'string'}
+        ]
+        CString.get_or_create_patterns = MagicMock(
+            return_value=string_patterns)
         value_list = ['2010-04-10', '27/01/1983', '19 04 2015']
         self.column = Column(value_list)
 

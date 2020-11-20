@@ -2,17 +2,16 @@ import re
 
 
 def test_pattern(pattern, value):
-    result = []
+    result = {'match': False,
+              'groups': {}}
     m = re.match(pattern, value)
 
     if m:
-        result.append('match')
+        result['match'] = True
         if m.groupdict():
-            result.extend(['{}: {}'.format(k, v) for k, v in m.groupdict().items()])
-    else:
-        result.append('no match')
+            result['groups'] = {k: v for k, v in m.groupdict().items()}
 
-    return '\n'.join(result)
+    return result
 
 
 def get_group(m, group_name):

@@ -1,10 +1,10 @@
 import re
 import datetime
-from easy_file.cast.patterns.c_patterns import CPattern
+from easy_file.cast.constant.cglobal import CPattern
 from easy_file.cast.utils import get_group
 
 
-class CDate:
+class CDate(CPattern):
     patterns = None
     type = 'DATE'
     patterns_table = 'date_patterns'
@@ -19,16 +19,16 @@ class CDate:
 
     @staticmethod
     def _cast(value):
-        CDate.patterns = CPattern.get_patterns(CDate.patterns_table)
+        CDate.patterns = CDate.get_or_create_patterns()
         for p in CDate.patterns:
-            m = re.match(p.pattern, value)
+            m = re.match(p['pattern'], value)
             if m is None:
                 continue
 
             res = CDate.get_date(m)
             return {'initial_value': value,
                     'value': res,
-                    **p.__dict__}
+                    **p}
         return {'initial_value': value,
                 'value': None}
 

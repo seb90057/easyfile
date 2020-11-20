@@ -1,17 +1,15 @@
 import setuptools
-import data_dictionary
 
 with open("requirements/common.txt") as handler:
     install_requires = handler.readlines()
 
 setuptools.setup(
     install_requires=install_requires,
-    name=data_dictionary,
-    package_data={
-        "data_dictionary.config": ["config.ini"],
-    },
+    name="sde_easy_file",
     package_dir={"": "src"},
     packages=setuptools.find_packages("src"),
-    scripts=["scripts/run.sh"],
-    version=data_dictionary.__version__,
+    version="1.0.5",
+    author="SDE",
+    url="https://github.com/seb90057/easyfile",
+    author_email="seb.delarue@gmail.com",
 )

@@ -1,8 +1,8 @@
 import re
-from easy_file.cast.patterns.c_patterns import CPattern
+from easy_file.cast.constant.cglobal import CPattern
 
 
-class CFloat:
+class CFloat(CPattern):
     patterns = None
     type = 'FLOAT'
     patterns_table = 'float_patterns'
@@ -10,9 +10,9 @@ class CFloat:
     @staticmethod
     def _cast(value):
         v = value.replace(' ', '')
-        CFloat.patterns = CPattern.get_patterns(CFloat.patterns_table)
+        CFloat.patterns = CFloat.get_or_create_patterns()
         for p in CFloat.patterns:
-            m = re.match(p.pattern, v)
+            m = re.match(p['pattern'], v)
             if m:
                 i = m.group('int')
                 if i is None:
@@ -22,7 +22,7 @@ class CFloat:
                     d = '0'
                 return {'initial_value': value,
                         'value': float('{}.{}'.format(i, d)),
-                        **p.__dict__}
+                        **p}
         return {'initial_value': value,
                 'value': None}
 

@@ -14,13 +14,13 @@ class Column:
         self.key_type = None
         self.foreign_table_name = None
         self.foreign_column_name = None
-        self.is_null = True
+        self.null_values = True
 
     def is_null(self):
-        self.is_null = True
+        self.null_values = True
 
     def is_not_null(self):
-        self.is_null = False
+        self.null_values = False
 
     def is_primary_key(self):
         self.key_type = Column._PRIMARY
@@ -52,7 +52,7 @@ class Column:
                                 table_ref=self.foreign_table_name,
                                 col_ref=self.foreign_column_name)
 
-        if not self.is_null:
+        if not self.null_values:
             column_definition += ' NOT NULL'
 
         return column_definition, other_definition
@@ -65,14 +65,3 @@ class Column:
     def __str__(self):
         res = ['{}: {}'.format(k, v) for k, v in self.__dict__.items()]
         return '\n'.join(res)
-
-
-if __name__ == '__main__':
-    c = Column('toto', 'text')
-    c.is_not_null()
-    # c.is_primary_key()
-    c.is_foreign_key('titi_table', 'titi_column')
-    basic_def, addi_def = c.get_column_definition()
-    print(basic_def)
-    print(addi_def)
-    print(c)

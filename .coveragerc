@@ -1,0 +1,11 @@
+[report]
+exclude_lines =
+    def get_or_create_connection
+    def execute_request
+    def commit
+    def get_or_create_patterns
+    if __name__
+
+[run]
+include =
+    src/*

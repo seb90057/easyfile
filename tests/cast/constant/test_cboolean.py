@@ -1,8 +1,16 @@
 import unittest
 from easy_file.cast.constant.cboolean import CBoolean
+from unittest.mock import MagicMock
 
 
 class CBooleanTest(unittest.TestCase):
+    def setUp(self) -> None:
+        patterns = [
+            {'pattern': '^(?P<true>true)|(?P<false>false)$',
+             'comment': 'true/false'}
+        ]
+        CBoolean.get_or_create_patterns = MagicMock(return_value=patterns)
+
     def test_cast(self):
         value = 'true'
         expected_result = {'initial_value': value,

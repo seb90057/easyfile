@@ -1,8 +1,8 @@
 import re
-from easy_file.cast.patterns.c_patterns import CPattern
+from easy_file.cast.constant.cglobal import CPattern
 
 
-class CBoolean:
+class CBoolean(CPattern):
     patterns = None
     type = 'BOOLEAN'
     patterns_table = 'boolean_patterns'
@@ -18,9 +18,9 @@ class CBoolean:
     @staticmethod
     def _cast(value):
         v = value.replace(' ', '').lower()
-        CBoolean.patterns = CPattern.get_patterns(CBoolean.patterns_table)
+        CBoolean.patterns = CBoolean.get_or_create_patterns()
         for p in CBoolean.patterns:
-            m = re.match(p.pattern, v)
+            m = re.match(p['pattern'], v)
             if m is None:
                 continue
             t = m.group('true')
@@ -32,7 +32,7 @@ class CBoolean:
                 res = False
             return {'initial_value': value,
                     'value': res,
-                    **p.__dict__}
+                    **p}
         return {'initial_value': value,
                 'value': None}
 
@@ -42,3 +42,8 @@ class CBoolean:
         if res is not None:
             return res
         return None
+
+
+if __name__ == '__main__':
+    patterns = CBoolean.get_or_create_patterns()
+    print('ok')

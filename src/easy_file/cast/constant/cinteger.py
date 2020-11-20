@@ -1,8 +1,8 @@
 import re
-from easy_file.cast.patterns.c_patterns import CPattern
+from easy_file.cast.constant.cglobal import CPattern
 
 
-class CInteger:
+class CInteger(CPattern):
     patterns = None
     type = 'INTEGER'
     patterns_file_name = 'integer.json'
@@ -11,13 +11,13 @@ class CInteger:
     @staticmethod
     def _cast(value):
         val = value.replace(' ', '')
-        CInteger.patterns = CPattern.get_patterns(CInteger.patterns_table)
+        CInteger.patterns = CInteger.get_or_create_patterns()
         for p in CInteger.patterns:
-            m = re.match(p.pattern, val)
+            m = re.match(p['pattern'], val)
             if m:
                 return {'initial_value': value,
                         'value': int(m.group('int')),
-                        **p.__dict__}
+                        **p}
         return {'initial_value': value,
                 'value': None}
 
